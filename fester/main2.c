@@ -41,54 +41,6 @@ static qeo_platform_device_id _id;
  *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
  *   eth0:  412867    3706    0    0    0     0          0         0     2218      11    0    0    0     0       0          0
  */
-static void publish_netstat_messages(const qeo_state_writer_t *writer)
-{
-    org_qeo_sample_gauge_NetStatMessage_t msg = {};
-    FILE *fp = NULL;
-    char buf[256], *saveptr, *token;
-    int cnt = 0;
-    struct timespec time = {};
-    int i = 0;
-
-    msg.deviceId.lower = _id.lowerId;
-    msg.deviceId.upper = _id.upperId;
-    /* now parse /proc/net/dev and publish a message for each interface. */
-    fp = fopen("/proc/net/dev", "r");
-    assert(NULL != fp);
-    while (NULL != fgets(buf, sizeof(buf), fp)) {
-        cnt++;
-        if (cnt <= 2) {
-            continue; /* skip first two header lines */
-        }
-        /* parse and fill interface name */
-        token = strtok_r(buf, ":", &saveptr);
-        msg.ifName = strdup(token);
-        /* parse and fill received byte count */
-        token = strtok_r(NULL, " ", &saveptr);
-        msg.bytesIn = atoi(token);
-        /* parse and fill received packet count */
-        token = strtok_r(NULL, " ", &saveptr);
-        msg.packetsIn = atoi(token);
-        /* skip some unused fields */
-        for (i = 0; i < 6; i++) {
-            token = strtok_r(NULL, " ", &saveptr); /* skip */
-        }
-        /* parse and fill sent byte count */
-        token = strtok_r(NULL, " ", &saveptr);
-        msg.bytesOut = atoi(token);
-        /* parse and fill sent packet count */
-        token = strtok_r(NULL, " ", &saveptr);
-        msg.packetsOut = atoi(token);
-        /* calculate and fill timestamp */
-        clock_gettime(CLOCK_MONOTONIC, &time);
-        msg.timestamp = ((int64_t) time.tv_nsec) + (((int64_t) time.tv_sec) * 1000000000);
-        /* publish sample */
-        qeo_state_writer_write(writer, &msg);
-        /* clear sample */
-        free(msg.ifName);
-    }
-    fclose(fp);
-}
 
 int dosomething(void)
 {
@@ -107,13 +59,16 @@ int dosomething(void)
         msg_writer = qeo_factory_create_event_writer(qeo, org_qeo_sample_simplechat_ChatMessage_type, NULL, 0);
         // msg_reader = qeo_factory_create_event_reader(qeo, org_qeo_sample_simplechat_ChatMessage_type, &_listener, 0);
 
+        sleep(2);
         /* send message out */
         qeo_event_writer_write(msg_writer, &chat_msg);
-
+        sleep(2);
         /* clean up */
-        qeo_event_reader_close(msg_reader);
         qeo_event_writer_close(msg_writer);
         qeo_factory_close(qeo);
+    }
+    else {
+        return 1;
     }
     return 0;
 }
