@@ -1,7 +1,7 @@
 PLATFORM = i686-linux
 CC = gcc
 
-TARGET = sample-qgauge-c-writer
+TARGET = main2
 LIBDIR = $(QEO_HOME)/c/lib/$(PLATFORM)
 LIBS = -lqeo -lqeoutil -lrt -lpthread
 CFLAGS = -m32 -g -Wall  -I$(QEO_HOME)/c/include
@@ -15,7 +15,8 @@ endif
 default: $(TARGET)
 all: default
 
-OBJECTS = $(patsubst %.c,%.o,$(wildcard *.c))
+OBJECTS = $(patsubst %.c,%.o,$(wildcard *.c)
+OBJECTS = main2.o qeo_types.o QGauge_NetStatMessage.o
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS)
