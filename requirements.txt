@@ -1,0 +1,3 @@
+Cython==0.19.2
+distribute==0.6.24
+wsgiref==0.1.2
