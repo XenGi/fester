@@ -1,9 +1,4 @@
-pympd-qeo
-=========
+fester - a cython wrapper for the QEO SDK
+=========================================
 
-Python wrapper for mpd talking with qeo
-
-
-
-GNU General Public License
-http://www.gnu.org/licenses/gpl.html
+hacked together on 20131109 at the QEO hackaton.
