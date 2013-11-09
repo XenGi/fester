@@ -1,4 +1,4 @@
-pympd-qeo
-=========
+fester - a cython wrapper for the QEO SDK
+=========================================
 
-Python wrapper for mpd talking with qeo
+hacked together on 20131109 at the QEO hackaton.
