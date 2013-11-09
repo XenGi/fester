@@ -25,7 +25,7 @@
 #include <qeo/api.h>
 #include <qeo/device.h>
 
-#include "QGauge_NetStatMessage.h"
+#include "QSimpleChat_ChatMessage.h"
 
 static volatile bool _quit = false;
 static qeo_platform_device_id _id;
@@ -90,59 +90,31 @@ static void publish_netstat_messages(const qeo_state_writer_t *writer)
     fclose(fp);
 }
 
-/* ===[ Main code ]========================================================== */
-
-/**
- * Signal handler.  When called the main loop will stop and the process will
- * terminate.
- */
-static void sighandler(int sig)
-{
-    _quit = true;
-}
-
-/**
- * Setup a signal handler for intercepting Ctrl-C.  This will allow us to
- * perform a correct resource clean up.
- */
-static void setup_sighandler(void)
-{
-    struct sigaction sa;
-
-    sa.sa_handler = sighandler;
-    sa.sa_flags = 0;
-    sigemptyset(&sa.sa_mask);
-    if ((sigaction(SIGTERM, &sa, NULL) == -1) ||
-        (sigaction(SIGINT, &sa, NULL) == -1)) {
-        perror("sigaction");
-        exit(-1);
-    }
-}
-
 int dosomething(void)
 {
     qeo_factory_t *qeo;
-    qeo_state_writer_t *msg_writer;
-    const qeo_platform_device_info *info = qeo_platform_get_device_info();
+    qeo_event_writer_t *msg_writer;
+    // qeo_event_reader_t *msg_reader;
 
-    /* Setup signal handler to be able to cleanly shutdown. */
-    setup_sighandler();
-    /* Initialize Qeo (this is a blocking call and will only return when
-     * initialization is complete). */
+    /* local variables for storing the message before sending */
+    char buf[] = "up";
+    char from[] = "phone";
+    org_qeo_sample_simplechat_ChatMessage_t chat_msg = { .message = buf, .from = from };
+
+    /* initialize */
     qeo = qeo_factory_create();
-    assert(NULL != qeo);
-    /* Create a state writer for NetStatMessage. */
-    msg_writer = qeo_factory_create_state_writer(qeo, org_qeo_sample_gauge_NetStatMessage_type, NULL, 0);
-    /* Fetch the device ID (will be used in the NetStatMessage) */
-    _id = info->qeoDeviceId;
-    /* Publish statistics until interrupted (Ctrl-C) */
-    while (!_quit) {
-        publish_netstat_messages(msg_writer);
-        usleep(250*1000); /* every 250ms */
+    if (qeo != NULL) {
+        msg_writer = qeo_factory_create_event_writer(qeo, org_qeo_sample_simplechat_ChatMessage_type, NULL, 0);
+        // msg_reader = qeo_factory_create_event_reader(qeo, org_qeo_sample_simplechat_ChatMessage_type, &_listener, 0);
+
+        /* send message out */
+        qeo_event_writer_write(msg_writer, &chat_msg);
+
+        /* clean up */
+        qeo_event_reader_close(msg_reader);
+        qeo_event_writer_close(msg_writer);
+        qeo_factory_close(qeo);
     }
-    /* Close our reader. */
-    qeo_state_writer_close(msg_writer);
-    /* Release the Qeo factory. */
-    qeo_factory_close(qeo);
     return 0;
 }
+

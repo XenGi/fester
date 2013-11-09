@@ -8,7 +8,7 @@ import os
 
 setup (
     cmdclass = {'build_ext': build_ext } ,
-    ext_modules = [Extension ("fester.integrate", ["fester/integrate.pyx", "fester/qeo_types.c", "fester/main2.c", "fester/QGauge_NetStatMessage.c"],
+    ext_modules = [Extension ("fester.integrate", ["fester/integrate.pyx", "fester/qeo_types.c", "fester/main2.c", "fester/QSimpleChat_ChatMessage.c"],
     extra_compile_args=['-g', '-Wall',  '-I%s/c/include' % os.environ['QEO_HOME']],
     libraries=['rt','qeo', 'qeoutil', 'pthread'],
     library_dirs=['%s/c/lib/arm-linux-gnueabihf' % os.environ['QEO_HOME']])]
