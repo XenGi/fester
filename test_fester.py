@@ -1,3 +1,6 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 from fester.integrate import hallo
 
 if __name__ == '__main__':
