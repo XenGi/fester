@@ -90,15 +90,13 @@ static void publish_netstat_messages(const qeo_state_writer_t *writer)
     fclose(fp);
 }
 
-int dosomething(void)
+int dosomething(char *buf, char *from)
 {
     qeo_factory_t *qeo;
     qeo_event_writer_t *msg_writer;
     // qeo_event_reader_t *msg_reader;
 
     /* local variables for storing the message before sending */
-    char buf[] = "up";
-    char from[] = "phone";
     org_qeo_sample_simplechat_ChatMessage_t chat_msg = { .message = buf, .from = from };
 
     /* initialize */
