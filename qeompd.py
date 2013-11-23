@@ -40,11 +40,15 @@ if __name__ == '__main__':
     #myqeompd = Qeompd()
   
     q = QeoApi()
-    q.setup(bla) 
+    retval = q.setup() 
+    if retval == 0:
+        q.start_receiving(bla)
+        thread.join()
+    
     while True:
         try: 
-            time.sleep(5)
-        except:
+            time.sleep(1)
+        except KeyboardInterrupt:
             break
         #sample = random.sample(["sad", "happy", "calm", "energy"], 1)[0]
         #print sample
@@ -54,4 +58,5 @@ if __name__ == '__main__':
         #time.sleep(5)
 
     #myqeompd.teardown()
+    q.stop_receiving()
     q.teardown()

@@ -57,12 +57,19 @@ qeo_factory_t *qeo;
 qeo_event_writer_t *msg_writer;
 qeo_event_reader_t *msg_reader;
 
-void do_setup() {
+int do_setup() {
     qeo = qeo_factory_create();
     msg_writer = qeo_factory_create_event_writer(qeo, org_qeo_sample_simplechat_ChatMessage_type, NULL, 0);
     msg_reader = qeo_factory_create_event_reader(qeo, org_qeo_sample_simplechat_ChatMessage_type, &_listener, 0);
     
     sleep(1);
+
+    if (qeo != NULL) {
+        return 0;
+    }
+
+    // should not get here
+    return -1;
 }
 
 void do_start_receiving(cheesefunc user_func, void *user_data) {
@@ -73,7 +80,7 @@ void do_start_receiving(cheesefunc user_func, void *user_data) {
     my_user_data = user_data;
     
     while(!done) {
-        sleep(2);
+        sleep(1);
     }
     printf("done receiving.\n");
 }
@@ -88,10 +95,6 @@ void do_send_message(char* origin, char* message) {
     qeo_event_writer_write(msg_writer, &chat_msg);
     sleep(1);
 }
-
-//void do_read_message(char* message) {
-    //qeo_event_writer_write(msg_writer, &chat_msg);
-// }
 
 void do_teardown() {
     qeo_event_writer_close(msg_writer);
