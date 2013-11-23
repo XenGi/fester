@@ -1,6 +1,13 @@
-#ifdef MAIN2_H
-#define MAIN_H
+#ifndef _MAIN2_H_
+#define _MAIN2_H_
 
-int dosomething(void);
+//int dosomething(char* message);
+
+typedef void (*cheesefunc)(char *name, void *user_data);
+void do_setup(cheesefunc user_func, void *user_data);
+
+void do_teardown(void);
+void do_send_message(char* origin, char* message);
+
 
 #endif

@@ -24,52 +24,67 @@
 #include <inttypes.h>
 #include <qeo/api.h>
 #include <qeo/device.h>
+#include <Python.h>
 
+#include "main2.h"
 #include "QSimpleChat_ChatMessage.h"
+// #include "integrate.h"
 
 static volatile bool _quit = false;
 static qeo_platform_device_id _id;
 
-/* ===[ NetStatMessage publication ]========================================= */
+static cheesefunc* my_callback;
+void *my_user_data; 
 
-/**
- * Publish messages based on the interface statistics from /proc/net/dev.
- *
- * Syntax of /prov/net/dev:
- *
- * Inter-|   Receive                                                |  Transmit
- *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
- *   eth0:  412867    3706    0    0    0     0          0         0     2218      11    0    0    0     0       0          0
- */
+/* ===[ Chat message listeners ]============================================= */
 
-int dosomething(void)
+static void on_chat_message(const qeo_event_reader_t *reader,
+                            const void *data,
+                            uintptr_t userdata)
 {
-    qeo_factory_t *qeo;
-    qeo_event_writer_t *msg_writer;
-    // qeo_event_reader_t *msg_reader;
+    org_qeo_sample_simplechat_ChatMessage_t *msg = (org_qeo_sample_simplechat_ChatMessage_t *)data;
 
-    /* local variables for storing the message before sending */
-    char buf[] = "up";
-    char from[] = "phone";
-    org_qeo_sample_simplechat_ChatMessage_t chat_msg = { .message = buf, .from = from };
+    /* Whenever a new data sample arrives, print it to stdout */
+    printf("%s : %s\n", msg->from, msg->message);
+    *my_callback(msg->message, my_user_data);
 
-    /* initialize */
-    qeo = qeo_factory_create();
-    if (qeo != NULL) {
-        msg_writer = qeo_factory_create_event_writer(qeo, org_qeo_sample_simplechat_ChatMessage_type, NULL, 0);
-        // msg_reader = qeo_factory_create_event_reader(qeo, org_qeo_sample_simplechat_ChatMessage_type, &_listener, 0);
-
-        sleep(2);
-        /* send message out */
-        qeo_event_writer_write(msg_writer, &chat_msg);
-        sleep(2);
-        /* clean up */
-        qeo_event_writer_close(msg_writer);
-        qeo_factory_close(qeo);
-    }
-    else {
-        return 1;
-    }
-    return 0;
 }
 
+static qeo_event_reader_listener_t _listener = { .on_data = on_chat_message };
+
+qeo_factory_t *qeo;
+qeo_event_writer_t *msg_writer;
+qeo_event_reader_t *msg_reader;
+
+void do_setup(cheesefunc user_func, void *user_data) {
+    qeo = qeo_factory_create();
+    msg_writer = qeo_factory_create_event_writer(qeo, org_qeo_sample_simplechat_ChatMessage_type, NULL, 0);
+    msg_reader = qeo_factory_create_event_reader(qeo, org_qeo_sample_simplechat_ChatMessage_type, &_listener, 0);
+   
+    sleep(1);
+
+    printf("go!\n");
+    my_callback = &user_func;
+    my_user_data = user_data;
+    
+    //while(1);I
+    //if (qeo != NULL) {
+    //    return 0;
+    //}
+}
+
+void do_send_message(char* origin, char* message) {
+    org_qeo_sample_simplechat_ChatMessage_t chat_msg = { .message = message, .from = origin };
+    sleep(1);
+    qeo_event_writer_write(msg_writer, &chat_msg);
+    sleep(1);
+}
+
+//void do_read_message(char* message) {
+    //qeo_event_writer_write(msg_writer, &chat_msg);
+// }
+
+void do_teardown() {
+    qeo_event_writer_close(msg_writer);
+    qeo_factory_close(qeo);
+}
