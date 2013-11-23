@@ -7,7 +7,7 @@ from fester.integrate import QeoApi # setup, teardown, send_message
 import random
 from unidecode import unidecode
 
-def bla(data):
+def handle_message(data):
     print ">>>", data
 
 class Qeompd(object):
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     q = QeoApi()
     retval = q.setup() 
     if retval == 0:
-        q.start_receiving(bla)
+        q.start_receiving(handle_message)
         thread.join()
     
     while True:
