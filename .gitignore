@@ -45,3 +45,6 @@ fester/integrate.c
 .Python
 
 .idea
+fester/integrate.h
+
+fester/integrate.c
